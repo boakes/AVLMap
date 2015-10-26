@@ -1,10 +1,12 @@
-#ifndef AVLMap
-#define AVLMap 
+#ifndef AVLMAP
+#define AVLMAP 
 
 #include <iostream> 
 #include <stdlib.h>
+#include <algorithm>
+#include <list>
 template<typename K,typename V>
-class AVLMap {
+class AVLMap{
     
 private:
     struct Node{
@@ -12,9 +14,8 @@ private:
         Node* left; 
         Node* parent; 
         std::pair<K,V> nodepr; 
-        int ht; 
-
-        Node(Node* r, Node* l, Node* p, K k, V v, int h){
+        int ht;
+        Node(Node* r, Node* l, Node* p, K k, V v,int h){
             right = r;
             left = l;
             parent = p; 
@@ -22,9 +23,10 @@ private:
             ht = h;
         }
     };
+
     int sz; 
     Node* root;
-    
+
 public:
 
     typedef K key_type;
@@ -100,6 +102,10 @@ public:
             --(*this);
             return tmp;
         }
+
+        Node* getnode(){
+            return loc;
+        }
     };
 
     class const_iterator {
@@ -168,6 +174,21 @@ public:
         }
     };
 
+
+    int height(Node* t) {
+            return (t == nullptr)?-1:t->ht;
+    }
+    
+    void fixheight(Node* t){
+        int htrgt =height(t->right);
+        int htlft = height(t->left);
+        t->ht = (htlft > htrgt ? htlft:htrgt) + 1;
+    }
+
+    int balance(Node* t){
+        return height(t->right)-height(t->left);
+    }    
+
     static Node* maxNode(Node* x){
         while (x->right != nullptr){
             x = x->right;
@@ -187,6 +208,8 @@ public:
     ~AVLMap(){
        clear();
     }
+
+
     void helpCopier(Node *x){
         if(x!=nullptr){
             insert(x->nodepr);
@@ -209,6 +232,48 @@ public:
         return *this;
     }
 
+    void LeftRotate(Node* x){
+        Node* y = x->right;
+        x->right = y->left;
+        if(y->left != nullptr){y->left->parent = x;}
+        y->parent = x->parent;
+        if(x->parent == nullptr){
+            root = y;
+        } else if (x == x->parent->left){
+            x->parent->left = y;
+        } else {
+            x->parent->right = y;
+        }
+        y->left = x;
+        x->parent = y;
+    }
+
+    void RightRotate(Node* x){
+        Node* y = x->left;
+        x->left = y->right;
+        if(y->right != nullptr){y->right->parent = x;}
+        y->parent = x->parent;
+        if(x->parent == nullptr){
+            root = y;
+        } else if (x == x->parent->right){
+            x->parent->right = y;
+        } else {
+            x->parent->left = y;
+        }
+        y->right = x;
+        x->parent = y;
+    }
+
+    void DLRotate(Node* x){
+        RightRotate(x->left);
+        LeftRotate(x);
+    }
+
+    void DRRotate(Node* x){
+        LeftRotate(x->right);
+        RightRotate(x);
+    }
+
     bool empty() const {return sz == 0;}
 
     unsigned size() const {return sz;}
@@ -216,6 +281,7 @@ public:
     Node* getroot(){
         return root;
     }
+
 
     Node* fancy_find(Node* nd, const key_type& k) const{
         if(nd == nullptr || k == nd->nodepr.first){
@@ -259,24 +325,41 @@ public:
         if(tmp != end()){
             return std::make_pair(tmp,false);
         }
-        Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second);
+        Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second,0);
         Node* y = nullptr;
         Node* x = root;
         ++sz;
         while (x != nullptr){
             y = x;
-            if(z->nodepr.first < x->nodepr.first){
+            if(val.first < x->nodepr.first){
                 x = x->left;
             }else{x = x->right;}
         }
         z->parent = y;
         if(y == nullptr){
             root = z;
-        } else if(z->nodepr.first < y->nodepr.first){
+        } else if(val.first < y->nodepr.first){
             y->left = z;
+            if(height(y->left)-height(y->right)>=2){
+                if(val.first < y->left->nodepr.first){
+                    LeftRotate(y);
+                }
+                else {
+                    DLRotate(y);
+                }
+            }
         } else{
             y->right = z;
+             if(height(y->left)-height(y->right)>=2){
+                if(val.first > y->right->nodepr.first){
+                    RightRotate(y);
+                }
+                else {
+                    DRRotate(y);
+                }
+            }
         }
+        if(y!= nullptr) fixheight(y);
         return std::make_pair(iterator(z,false),true);
     }
 
@@ -403,6 +486,7 @@ public:
             return const_iterator(maxNode(root),true);
         }
     }
+
 
 };
 
