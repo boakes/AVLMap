@@ -310,6 +310,7 @@ public:
 
 
     iterator find(const key_type& k){
+<<<<<<< HEAD
         Node* fndr = root;
         while((fndr!= nullptr) && (k != (fndr->nodepr).first)){
             if(k < (fndr->nodepr).first){
@@ -333,12 +334,42 @@ public:
         }
         if(fndr == nullptr){return end();}
         else {return const_iterator(fndr,false);}
+=======
+        Node* ret = root;
+        while((ret!= nullptr) && (k != (ret->data).first)){
+            if(k < (ret->data).first){
+                ret = ret->left;
+            }
+            else{
+                ret = ret->right;}
+        }
+        if(ret == nullptr){  
+            return end();}
+        else {return iterator(ret);}
+    }
+
+    const_iterator find(const key_type& k) const{
+        Node* ret = root;
+        while((ret!= nullptr) && (k != (ret->data).first)){
+            if(k < (ret->data).first){
+                ret = ret->left;
+            }
+            else{ret = ret->right;}
+        }
+        if(ret == nullptr){return end();}
+        else {return const_iterator(ret);}
+>>>>>>> 89601ae2715b51ebcfce5771ae9843b288cd6316
     }
 
     unsigned int count(const key_type& k) const{
         if(find(k) == end()) {return 0;}
         else return 1;
     }
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 89601ae2715b51ebcfce5771ae9843b288cd6316
     std::pair<iterator,bool> insert(const value_type& val){ 
         Node* y = nullptr;
         Node* x = root;
