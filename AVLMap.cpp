@@ -24,8 +24,9 @@ void testone() {
 	test.insert(fst);
 	test.insert(snd);
 	auto x = test.insert(thrd);
-	test.insert(fr);
+	test.printPreOrder(test.getroot());
 	/*
+	test.insert(fr);
 	test.insert(sx);
 
 	test.insert(svn);
@@ -35,7 +36,7 @@ void testone() {
 	cout << test.height(test.getroot()->left) << "\n";
 	cout << test.height(test.getroot()->right) << "\n";
 	*/
-	test.printPreOrder(test.getroot());
+	//test.printPreOrder(test.getroot());
 	//cout << test[1] << "\n";
 	//cout << test[2] << "\n";
 	//cout << test[3] << "\n";
@@ -88,7 +89,7 @@ bool equalitytest(){
 	}
 	return testbool;
 }
-
+*/
 
 void chartest() {
 	AVLMap<int,char> test; 
@@ -117,7 +118,7 @@ void chartest() {
 	}
 
 }
-
+/*
 
 bool runTests(){
 	int test_size = 2000000;
@@ -193,9 +194,46 @@ bool runTests(){
 
 */
 
+
+bool runAVLTests(){
+	int test_size = 50;
+    AVLMap<int, int> firstbst;
+	map<int,int> firstmap;
+	
+	vector<int> randoms;
+
+	for(int i = 0; i<test_size; ++i){
+		randoms.push_back(i);
+	}
+	//cout << randoms[0] << "\n";
+	//cout << randoms[0] << "\n";
+
+	auto t1a = std::chrono::high_resolution_clock::now();
+	for(int i=0; i<test_size; ++i){
+	    firstbst.insert(make_pair(randoms[i],randoms[i]));
+		firstmap.insert(make_pair(randoms[i],randoms[i]));
+	}
+	auto t2a = std::chrono::high_resolution_clock::now();
+
+   std::cout << "inserting " << test_size << " took "
+           	  << std::chrono::duration_cast<std::chrono::milliseconds>(t2a-t1a).count()///1000
+              << " milliseconds\n";
+
+	for(int i=0; i<test_size; ++i){
+		if(firstbst[randoms[i]]!=firstmap[randoms[i]]){
+			cout << "check with map failed\n";
+			return false;
+		}
+	}	
+
+	firstbst.printPreOrder(firstbst.getroot());
+
+	return true;	
+}
 int main(){
 	testone();
 	cout << "\n---------Testone passed---------\n";
+	runAVLTests();
 /*	
 	auto t1 = std::chrono::high_resolution_clock::now();
     runTests();

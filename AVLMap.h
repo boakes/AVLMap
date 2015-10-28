@@ -174,30 +174,30 @@ public:
 
 
     int height(Node* t) {
-            return (t == nullptr)?-1:t->ht;
+            if(t == nullptr){
+                return -1;
+            }else return (t->ht);
     }
     
     void fixheight(Node* t){
-        if(t != nullptr){
-            int htrgt = height(t->right);
-            int htlft = height(t->left);
-            t->ht = (htlft > htrgt ? htlft:htrgt) + 1;
-            fixheight(t->parent);
+        while(t != nullptr){
+            t->ht = 1 + std::max(height(t->right),height(t->left));
+            t = t->parent;
         }
     }
 
     void balance(Node* t){
          Node* rover = t;
-         int htr = height(t->right) - height(t->left);
-         while((rover != nullptr) && std::abs(htr) < 1){
+         while((rover != nullptr) && ((height(rover->right) - height(rover->left)) < 2) ){
             rover = rover -> parent;
          }   
+
          if(rover != nullptr){
             if(height(rover -> left) > height(rover -> right)){
-                if(height(rover->left->left)< height(rover->left->right)){
-                    RightRotate(rover->right);
-                    LeftRotate(rover);
-                    rover->ht = (height(t->left) > height(t->right) ?height(t->left):height(t->right)) + 1;
+                if(height(rover->left->left) < height(rover->left->right)){
+                    LeftRotate(rover->left);
+                    RightRotate(rover);
+                    rover->ht = 1 + std::max(height(rover->right),height(rover->left));
                     fixheight(rover->parent->left);
                 }
                 else{
@@ -205,10 +205,10 @@ public:
                     fixheight(rover);
                 }
             } else{
-                 if(height(rover -> right -> left) > height(rover -> right -> right)){
-                    LeftRotate(rover->left);
-                    RightRotate(rover);
-                    rover->ht = (height(t->left) > height(t->right) ? height(t->left):height(t->right)) + 1;
+                 if(height(rover -> right -> right) < height(rover -> right -> left)){
+                    RightRotate(rover->right);
+                    LeftRotate(rover);
+                    rover->ht = 1 + std::max(height(rover->right),height(rover->left));
                     fixheight(rover->parent->right);
                  } else {
                     LeftRotate(rover);
@@ -219,15 +219,21 @@ public:
     }    
 
     static Node* maxNode(Node* x){
-        while (x->right != nullptr){
-            x = x->right;
-        } return x;
+        if(x!= nullptr){
+            while (x->right != nullptr){
+             x = x->right;
+            } 
+        }
+        return x;
     }
 
     static Node* minNode(Node* x){
-        while (x->left != nullptr){
+       if(x!= nullptr){
+       while (x->left != nullptr){
             x = x->left;
-        } return x;
+        } 
+      }
+        return x;
     }
 
     AVLMap(){
@@ -293,7 +299,6 @@ public:
         x->parent = y;
     }
 
-    
 
     bool empty() const {return sz == 0;}
 
@@ -346,6 +351,7 @@ public:
         if(tmp != end()){
             return std::make_pair(tmp,false);
         }
+
         Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second,0);
         Node* y = nullptr;
         Node* x = root;
@@ -366,7 +372,8 @@ public:
         } else{
             y->right = z;
         }
-        balance(y);
+        fixheight(z);
+        balance(z);
         return std::make_pair(iterator(z,false),true);
     }
 
@@ -385,9 +392,11 @@ public:
          Node* tmp = z; 
             if(z->left == nullptr){
                 transplant(z,z->right);
+                fixheight(maxNode(z->right));
                 balance(z->right);
             }else if(z->right == nullptr){
                 transplant(z,z->left);
+                fixheight(minNode(z->left));
                 balance(z->left);
             }else { 
                 Node* y = minNode(z->right);
@@ -399,7 +408,8 @@ public:
                 transplant(z,y);
                 y->left = z->left;
                 y->left->parent = y;
-                balance(y);
+                fixheight(minNode(y->right));
+                balance(minNode(y->right));
             }
             delete tmp;
             --sz;
