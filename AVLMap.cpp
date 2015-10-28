@@ -21,15 +21,21 @@ void testone() {
 	pair<int,int> fv = make_pair(5,5);
 	pair<int,int> sx = make_pair(6,4);
 	pair<int,int> svn = make_pair(7,4);
-	test.insert(fr);
+	test.insert(fst);
+	test.insert(snd);
 	auto x = test.insert(thrd);
+	test.insert(fr);
+	/*
 	test.insert(sx);
+
 	test.insert(svn);
 	test.insert(fv);
 	test.insert(fst);
-	test.insert(snd);
-
-	
+	cout << test.height(test.getroot()) << "\n"; 
+	cout << test.height(test.getroot()->left) << "\n";
+	cout << test.height(test.getroot()->right) << "\n";
+	*/
+	test.printPreOrder(test.getroot());
 	//cout << test[1] << "\n";
 	//cout << test[2] << "\n";
 	//cout << test[3] << "\n";

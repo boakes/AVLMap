@@ -23,12 +23,10 @@ private:
             ht = h;
         }
     };
-
     int sz; 
     Node* root;
 
 public:
-
     typedef K key_type;
     typedef V mapped_type;
     typedef std::pair<K,V> value_type;
@@ -180,13 +178,44 @@ public:
     }
     
     void fixheight(Node* t){
-        int htrgt =height(t->right);
-        int htlft = height(t->left);
-        t->ht = (htlft > htrgt ? htlft:htrgt) + 1;
+        if(t != nullptr){
+            int htrgt = height(t->right);
+            int htlft = height(t->left);
+            t->ht = (htlft > htrgt ? htlft:htrgt) + 1;
+            fixheight(t->parent);
+        }
     }
 
-    int balance(Node* t){
-        return height(t->right)-height(t->left);
+    void balance(Node* t){
+         Node* rover = t;
+         int htr = height(t->right) - height(t->left);
+         while((rover != nullptr) && std::abs(htr) < 1){
+            rover = rover -> parent;
+         }   
+         if(rover != nullptr){
+            if(height(rover -> left) > height(rover -> right)){
+                if(height(rover->left->left)< height(rover->left->right)){
+                    RightRotate(rover->right);
+                    LeftRotate(rover);
+                    rover->ht = (height(t->left) > height(t->right) ?height(t->left):height(t->right)) + 1;
+                    fixheight(rover->parent->left);
+                }
+                else{
+                    RightRotate(rover);
+                    fixheight(rover);
+                }
+            } else{
+                 if(height(rover -> right -> left) > height(rover -> right -> right)){
+                    LeftRotate(rover->left);
+                    RightRotate(rover);
+                    rover->ht = (height(t->left) > height(t->right) ? height(t->left):height(t->right)) + 1;
+                    fixheight(rover->parent->right);
+                 } else {
+                    LeftRotate(rover);
+                    fixheight(rover);
+                 }
+            }
+         }
     }    
 
     static Node* maxNode(Node* x){
@@ -208,7 +237,6 @@ public:
     ~AVLMap(){
        clear();
     }
-
 
     void helpCopier(Node *x){
         if(x!=nullptr){
@@ -232,17 +260,23 @@ public:
         return *this;
     }
 
+     void transplant(Node* u, Node* v){
+        if(u->parent == nullptr){
+            root = v;
+        } else if (u == u->parent->left){
+            u->parent->left = v;
+        } else u->parent->right = v;
+        if (v != nullptr){
+            v->parent = u->parent;
+        }
+    }
+
     void LeftRotate(Node* x){
         Node* y = x->right;
+        transplant(x,y);
         x->right = y->left;
-        if(y->left != nullptr){y->left->parent = x;}
-        y->parent = x->parent;
-        if(x->parent == nullptr){
-            root = y;
-        } else if (x == x->parent->left){
-            x->parent->left = y;
-        } else {
-            x->parent->right = y;
+        if(y->left != nullptr){
+            y->left->parent = x;
         }
         y->left = x;
         x->parent = y;
@@ -250,29 +284,16 @@ public:
 
     void RightRotate(Node* x){
         Node* y = x->left;
+        transplant(x,y);
         x->left = y->right;
-        if(y->right != nullptr){y->right->parent = x;}
-        y->parent = x->parent;
-        if(x->parent == nullptr){
-            root = y;
-        } else if (x == x->parent->right){
-            x->parent->right = y;
-        } else {
-            x->parent->left = y;
+        if(y->right != nullptr){
+            y->right->parent = x;
         }
         y->right = x;
         x->parent = y;
     }
 
-    void DLRotate(Node* x){
-        RightRotate(x->left);
-        LeftRotate(x);
-    }
-
-    void DRRotate(Node* x){
-        LeftRotate(x->right);
-        RightRotate(x);
-    }
+    
 
     bool empty() const {return sz == 0;}
 
@@ -331,35 +352,21 @@ public:
         ++sz;
         while (x != nullptr){
             y = x;
-            if(val.first < x->nodepr.first){
+            if(z->nodepr.first < x->nodepr.first){
                 x = x->left;
             }else{x = x->right;}
         }
         z->parent = y;
         if(y == nullptr){
             root = z;
-        } else if(val.first < y->nodepr.first){
+            return std::make_pair(iterator(z,false),true);
+        } 
+        else if(z->nodepr.first < y->nodepr.first){
             y->left = z;
-            if(height(y->left)-height(y->right)>=2){
-                if(val.first < y->left->nodepr.first){
-                    LeftRotate(y);
-                }
-                else {
-                    DLRotate(y);
-                }
-            }
         } else{
             y->right = z;
-             if(height(y->left)-height(y->right)>=2){
-                if(val.first > y->right->nodepr.first){
-                    RightRotate(y);
-                }
-                else {
-                    DRRotate(y);
-                }
-            }
         }
-        if(y!= nullptr) fixheight(y);
+        balance(y);
         return std::make_pair(iterator(z,false),true);
     }
 
@@ -367,17 +374,6 @@ public:
     void insert(InputIterator first, InputIterator last) {
         for(auto iter = first; iter!=last; ++iter) {
             insert(*iter);
-        }
-    }
-
-    void transplant(Node* u, Node* v){
-        if(u->parent == nullptr){
-            root = v;
-        } else if (u == u->parent->left){
-            u->parent->left = v;
-        } else u->parent->right = v;
-        if (v != nullptr){
-            v->parent = u->parent;
         }
     }
 
@@ -389,8 +385,10 @@ public:
          Node* tmp = z; 
             if(z->left == nullptr){
                 transplant(z,z->right);
+                balance(z->right);
             }else if(z->right == nullptr){
                 transplant(z,z->left);
+                balance(z->left);
             }else { 
                 Node* y = minNode(z->right);
                 if(y->parent != z){
@@ -401,6 +399,7 @@ public:
                 transplant(z,y);
                 y->left = z->left;
                 y->left->parent = y;
+                balance(y);
             }
             delete tmp;
             --sz;
@@ -486,6 +485,23 @@ public:
             return const_iterator(maxNode(root),true);
         }
     }
+
+    void printPreOrder(Node* x){
+        if (x == nullptr){
+            std::cout << "NONE ";
+            return;
+        }
+        std::cout << x->nodepr.first << "\n";
+        std::cout << x->nodepr.first << "'s left : ";
+        printPreOrder(x->left);
+        std::cout << x->nodepr.first  << "'s right : ";
+        printPreOrder(x->right);
+       
+    }
+
+
+
+
 
 
 };
