@@ -14,7 +14,7 @@ private:
         Node* left; 
         Node* parent; 
         std::pair<K,V> nodepr; 
-        unsigned int ht;
+        int ht;
         Node(Node* r, Node* l, Node* p, K k, V v,int h){
             right = r;
             left = l;
@@ -23,7 +23,7 @@ private:
             ht = h;
         }
     };
-    unsigned int sz; 
+    unsigned sz; 
     Node* root;
 
 public:
@@ -40,30 +40,6 @@ public:
         friend class const_iterator;
         iterator(Node* l,bool b):loc(l),itrend(b){}
 
-        Node* Successor(Node* x){
-         if (x->right != nullptr){
-            return AVLMap<K,V>::minNode(x->right);
-         } 
-          Node* y = x->parent;
-          while (y != nullptr && x == y->right){
-                x = y;
-                y = y->parent;
-            }
-            return y;
-        }
-
-        Node* Predecessor(Node* x){
-         if (x->left != nullptr){
-            return AVLMap<K,V>::maxNode(x->left);
-         } 
-         Node* y = x->parent;
-         while (y != nullptr && x == y->left){
-                x = y;
-                y = y->parent;
-         }
-         return y;
-        }
-
         bool operator==(const iterator &i) const { 
             return (loc == i.loc && itrend == i.itrend); 
         }
@@ -72,21 +48,47 @@ public:
         std::pair<K,V> &operator*() { return loc -> nodepr; }
        
         iterator &operator++() {
-            Node* tmp = Successor(loc);
-            if(tmp == nullptr){
-                itrend = true;
+            if(loc->right != nullptr){
+                loc = loc->right;
+                while(loc->left != nullptr){
+                    loc=loc->left;
+                }
+                return *this;
             }else{
-                loc = tmp;
-                itrend =false;
+                Node* y = loc->parent;
+                while(y!=nullptr && loc == y->right){
+                    loc = y;
+                    y = y->parent;
+                }
+                if(y == nullptr) {
+                    while(loc->right != nullptr){
+                        loc = loc->right;
+                    }
+                    itrend = true;
+                } else {loc =y;}
+                return *this;
             }
-            return *this;
+         
         }
         iterator &operator--() {
             if(itrend){
                 itrend = false;
                 return *this;
+            } if (loc->left != nullptr){
+                loc = loc->left;
+                while(loc->right != nullptr){loc = loc->right;}
+                return *this;
             }else{
-                loc = Predecessor(loc);
+                Node* y = loc->parent;
+                while(y!=nullptr && loc == y->left){
+                    loc = y;
+                    y = y->parent;
+                }
+                if(y == nullptr) {
+                    while(loc->left != nullptr){
+                        loc = loc->left;
+                    }
+                } else {loc =y;}
                 return *this;
             }
         }
@@ -100,10 +102,6 @@ public:
             --(*this);
             return tmp;
         }
-
-        Node* getnode(){
-            return loc;
-        }
     };
 
     class const_iterator {
@@ -115,50 +113,53 @@ public:
         // TODO: Other constructors as needed.
         const_iterator(const iterator &iter):loc(iter.loc),itrend(iter.itrend){}
 
-        Node* Successor(Node* x){
-         if (x->right != nullptr){
-            return AVLMap<K,V>::minNode(x->right);
-         } 
-          Node* y = x->parent;
-          while (y != nullptr && x == y->right){
-                x = y;
-                y = y->parent;
-            }
-            return y;
-        }
-
-        Node* Predecessor(Node* x){
-         if (x->left != nullptr){
-            return AVLMap<K,V>::maxNode(x->left);
-         } 
-         Node* y = x->parent;
-         while (y != nullptr && x == y->left){
-                x = y;
-                y = y->parent;
-            }
-            return y;
-        }
-
         bool operator==(const const_iterator &i) const { return (loc == i.loc && itrend == i.itrend);  }
         bool operator!=(const const_iterator &i) const { return !(*this==i); }
         const std::pair<K,V> &operator*() { return loc -> nodepr; }
         const_iterator &operator++() {
-            Node* tmp = Successor(loc);
-            if(tmp == nullptr){
-                itrend = true;
+            if(loc->right != nullptr){
+                loc = loc->right;
+                while(loc->left != nullptr){
+                    loc=loc->left;
+                }
+                return *this;
             }else{
-                loc = tmp;
-                itrend=false;
+                Node* y = loc->parent;
+                while(y!=nullptr && loc == y->right){
+                    loc = y;
+                    y = y->parent;
+                }
+                if(y == nullptr) {
+                    while(loc->right != nullptr){
+                        loc = loc->right;
+                    }
+                    itrend = true;
+                } else {loc =y;}
+                return *this;
             }
-            return *this;
+         
         }
         const_iterator &operator--() {
             if(itrend){
                 itrend = false;
+                return *this;
+            } if (loc->left != nullptr){
+                loc = loc->left;
+                while(loc->right != nullptr){loc = loc->right;}
+                return *this;
             }else{
-                loc = Predecessor(loc);
+                Node* y = loc->parent;
+                while(y!=nullptr && loc == y->left){
+                    loc = y;
+                    y = y->parent;
+                }
+                if(y == nullptr) {
+                    while(loc->left != nullptr){
+                        loc = loc->left;
+                    }
+                } else {loc =y;}
+                return *this;
             }
-            return *this;
         }
         const_iterator operator++(int) {
             const_iterator tmp(*this);
@@ -175,7 +176,7 @@ public:
 
     int height(Node* t) {
             if(t == nullptr){
-                return -1;
+                return 0;
             }else return (t->ht);
     }
     
@@ -352,13 +353,13 @@ public:
         while (x != nullptr){
             y = x;
             if(x -> nodepr.first == val.first){
-                 return std::make_pair(iterator(x,false),true);
+                 return std::make_pair(iterator(x,false),false);
             }
-            if(val.first < x->nodepr.first){
+            else if(val.first < x->nodepr.first){
                 x = x->left;
             }else{x = x->right;}
         }
-        Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second,0);
+        Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second,1);
         ++sz;
         z->parent = y;
         if(y == nullptr){
@@ -424,10 +425,11 @@ public:
 */
 
     unsigned int erase(const key_type& k){
-        if(count(k) == 0){
+        auto iter = find(k);
+        if(iter == end()){
             return 0;
         }else{
-            erase(find(k));
+            erase(iter);
             return 1;
         }  
     }
@@ -490,8 +492,9 @@ public:
     }
 
     mapped_type &operator[](const K &key){
-       if(count(key) == 1){
-            return (*find(key)).second;
+       auto fndr = find(key);
+       if(fndr != end()){
+            return (*fndr).second;
         }else{
             std::pair<K,V> jk;
             jk.first = key;
@@ -504,8 +507,9 @@ public:
        if(sz != rhs.sz){
         return false;
        }
-       for(auto thsitr = begin(); thsitr != end(); ++thsitr){
-         if(rhs.count((*thsitr).first) == 0){
+       for(auto thsitr = rhs.begin(); thsitr != rhs.end(); ++thsitr){
+         auto fnd = find((*thsitr).first);
+         if(fnd == end() || (*fnd).second != (*thsitr).second){
             return false;
          }
        }
@@ -517,38 +521,51 @@ public:
     }
 
     iterator begin() {
+        Node* ret = root;
+        if(ret != nullptr){
+            while(ret->left != nullptr){
+                ret = ret->left;
+        }}
         if(sz == 0){
-            return end();
-        }else {
-            return iterator(minNode(root),false);
+            iterator(ret,true);
         }
+        return iterator(ret,false);
     }
     
     const_iterator begin() const { return cbegin();}
     
     iterator end() {
-        if(sz == 0){
-            return iterator(root,true); 
-        }else {
-            return iterator(maxNode(root),true); 
+        Node* ret = root;
+        if(ret != nullptr){
+            while(ret->right != nullptr){
+                ret=ret->right;
+            }
         }
+       return iterator(ret,true); 
     }
 
     const_iterator end() const { return cend(); }
 
     const_iterator cbegin() const { 
-        if(sz == 0){
-            return cend();
-        }else {
-            return const_iterator(minNode(root),false); 
+        Node* ret = root;
+        if(ret != nullptr){
+            while(ret->left != nullptr){
+                ret =ret->left;
+            }
         }
+        if(sz == 0){
+            return iterator(ret,true);
+        }
+        return const_iterator(ret,false); 
     }
     const_iterator cend() const { 
-        if(sz == 0){
-            return const_iterator(root,true);
-        } else {
-            return const_iterator(maxNode(root),true);
+        Node* ret = root;
+        if(ret != nullptr){
+            while(ret->right != nullptr){
+                ret =ret ->right;
+            }
         }
+        return const_iterator(ret,true);
     }
 
     void printPreOrder(Node* x){
