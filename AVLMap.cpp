@@ -196,7 +196,7 @@ bool runTests(){
 
 
 bool runAVLTests(){
-	int test_size = 50;
+	int test_size = 20;
     AVLMap<int, int> firstbst;
 	map<int,int> firstmap;
 	
@@ -225,15 +225,26 @@ bool runAVLTests(){
 			return false;
 		}
 	}	
-
+	cout << firstbst.size() << "\n\n\n";
+	for(int i=10; i<test_size/2; ++i){
+	    firstbst.erase(i);
+	}
 	firstbst.printPreOrder(firstbst.getroot());
-
 	return true;	
+}
+
+void simpleTest(){
+	AVLMap<int, int> st;
+	st[1];
+	cout << "\n" << st.size() << "\n";
 }
 int main(){
 	testone();
 	cout << "\n---------Testone passed---------\n";
 	runAVLTests();
+	cout << "\n";
+	simpleTest();
+	cout << "\n";
 /*	
 	auto t1 = std::chrono::high_resolution_clock::now();
     runTests();

@@ -14,7 +14,7 @@ private:
         Node* left; 
         Node* parent; 
         std::pair<K,V> nodepr; 
-        int ht;
+        unsigned int ht;
         Node(Node* r, Node* l, Node* p, K k, V v,int h){
             right = r;
             left = l;
@@ -23,7 +23,7 @@ private:
             ht = h;
         }
     };
-    int sz; 
+    unsigned int sz; 
     Node* root;
 
 public:
@@ -346,22 +346,20 @@ public:
         }
     }
 
-    std::pair<iterator,bool> insert(const value_type& val){
-        iterator tmp = find(val.first);
-        if(tmp != end()){
-            return std::make_pair(tmp,false);
-        }
-
-        Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second,0);
+    std::pair<iterator,bool> insert(const value_type& val){ 
         Node* y = nullptr;
         Node* x = root;
-        ++sz;
         while (x != nullptr){
             y = x;
-            if(z->nodepr.first < x->nodepr.first){
+            if(x -> nodepr.first == val.first){
+                 return std::make_pair(iterator(x,false),true);
+            }
+            if(val.first < x->nodepr.first){
                 x = x->left;
             }else{x = x->right;}
         }
+        Node* z = new Node(nullptr,nullptr,nullptr,val.first,val.second,0);
+        ++sz;
         z->parent = y;
         if(y == nullptr){
             root = z;
@@ -435,10 +433,10 @@ public:
     }
 
     iterator erase(const_iterator position){
-        iterator itertmp(position.loc,position.itrend);
-        ++itertmp;
         Node* z = position.loc;
         if(z->left == nullptr){
+                iterator itertmp = find((z->nodepr).first);
+                ++itertmp;
                 Node* tmp = z->right;
                 transplant(z,z->right);
                 delete z;
@@ -447,6 +445,8 @@ public:
                 --sz;
                 return itertmp;
         }else if(z->right == nullptr){
+                 iterator itertmp = find((z->nodepr).first);
+                 ++itertmp;
                 Node* tmp = z->left;
                 transplant(z,z->left);
                 delete z; 
@@ -455,6 +455,8 @@ public:
                 --sz;
                 return itertmp;
         }else { 
+                iterator itertmp = find((z->nodepr).first);
+                ++itertmp;
                 Node* y = minNode(z->right);
                 if(y->parent != z){
                   transplant(y,y->right);
@@ -465,8 +467,8 @@ public:
                 y->left = z->left;
                 y->left->parent = y;
                 delete z; 
-                fixheight(maxNode(y->right));
-                balance(maxNode(y->right));
+                fixheight(minNode(y->right));
+                balance(minNode(y->right));
                 --sz;
                 return itertmp;
         }
@@ -488,10 +490,14 @@ public:
     }
 
     mapped_type &operator[](const K &key){
-        std::pair<K,V> jk;
-        jk.first = key;
-        auto tmp = insert(jk); 
-        return (*(tmp.first)).second;
+       if(count(key) == 1){
+            return (*find(key)).second;
+        }else{
+            std::pair<K,V> jk;
+            jk.first = key;
+            insert(jk); 
+            return (*find(key)).second;
+        }
    }
    
     bool operator==(const AVLMap<K,V>& rhs) const{
