@@ -310,42 +310,37 @@ public:
     }
 
 
-    Node* fancy_find(Node* nd, const key_type& k) const{
-        if(nd == nullptr || k == nd->nodepr.first){
-            return nd;
-        }if(k < nd->nodepr.first){
-            return fancy_find(nd->left,k);
-        } else if (k > nd->nodepr.first){
-            return fancy_find(nd->right,k);
-        } else return nd;
-    }
-
     iterator find(const key_type& k){
-        auto fndr = fancy_find(root,k);
-        if(fndr == nullptr){
-            return end();
-        }else {
-            return iterator(fndr,false);
+        Node* ret = root;
+        while((ret!= nullptr) && (k != (ret->data).first)){
+            if(k < (ret->data).first){
+                ret = ret->left;
+            }
+            else{
+                ret = ret->right;}
         }
+        if(ret == nullptr){  
+            return end();}
+        else {return iterator(ret);}
     }
 
     const_iterator find(const key_type& k) const{
-        auto fndr = fancy_find(root,k);
-        if(fndr == nullptr){
-            return cend();
-        }else {
-            return iterator(fndr,false);
+        Node* ret = root;
+        while((ret!= nullptr) && (k != (ret->data).first)){
+            if(k < (ret->data).first){
+                ret = ret->left;
+            }
+            else{ret = ret->right;}
         }
+        if(ret == nullptr){return end();}
+        else {return const_iterator(ret);}
     }
 
     unsigned int count(const key_type& k) const{
-        auto fndr = fancy_find(root,k);
-        if(fndr == nullptr){
-            return 0;
-        } else {
-            return 1;
-        }
+        if(find(k) == end()) {return 0;}
+        else return 1;
     }
+
 
     std::pair<iterator,bool> insert(const value_type& val){ 
         Node* y = nullptr;
