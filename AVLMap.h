@@ -383,7 +383,7 @@ public:
             insert(*iter);
         }
     }
-
+/*
     unsigned int erase(const key_type& k){
         Node* z = fancy_find(root,k);
         if(z == nullptr){
@@ -423,6 +423,55 @@ public:
         erase((*position).first);
         return tmp;
     }
+*/
+
+    unsigned int erase(const key_type& k){
+        if(count(k) == 0){
+            return 0;
+        }else{
+            erase(find(k));
+            return 1;
+        }  
+    }
+
+    iterator erase(const_iterator position){
+        iterator itertmp(position.loc,position.itrend);
+        ++itertmp;
+        Node* z = position.loc;
+        if(z->left == nullptr){
+                Node* tmp = z->right;
+                transplant(z,z->right);
+                delete z;
+                fixheight(maxNode(tmp));
+                balance(tmp);
+                --sz;
+                return itertmp;
+        }else if(z->right == nullptr){
+                Node* tmp = z->left;
+                transplant(z,z->left);
+                delete z; 
+                fixheight(minNode(tmp));
+                balance(tmp);
+                --sz;
+                return itertmp;
+        }else { 
+                Node* y = minNode(z->right);
+                if(y->parent != z){
+                  transplant(y,y->right);
+                  y->right = z->right;
+                  y->right->parent = y;
+                }
+                transplant(z,y);
+                y->left = z->left;
+                y->left->parent = y;
+                delete z; 
+                fixheight(maxNode(y->right));
+                balance(maxNode(y->right));
+                --sz;
+                return itertmp;
+        }
+    }
+
 
     void cleartree(Node* x){  
         if(x!=nullptr){
