@@ -202,7 +202,7 @@ bool runAVLTests(){
 	
 	vector<int> randoms;
 
-	for(int i = 0; i<test_size; ++i){
+	for(int i = test_size; i>0; --i){
 		randoms.push_back(i);
 	}
 	//cout << randoms[0] << "\n";
