@@ -11,6 +11,7 @@ using std::cout;
 using std::vector;
 using std::random_shuffle;
 using std::pair;
+using std::string;
 
 void testone() {
 	AVLMap<int,int> test; 
@@ -24,14 +25,17 @@ void testone() {
 	test.insert(fst);
 	test.insert(snd);
 	auto x = test.insert(thrd);
-	test.printPreOrder(test.getroot());
-	/*
 	test.insert(fr);
+//	test.printPreOrder(test.getroot());
 	test.insert(sx);
-
 	test.insert(svn);
+//	test.insert(fst);
 	test.insert(fv);
-	test.insert(fst);
+	
+	if(test[1] != fst.second){
+		cout << "Problem with insert or bracket operator\n";
+	}
+	/*
 	cout << test.height(test.getroot()) << "\n"; 
 	cout << test.height(test.getroot()->left) << "\n";
 	cout << test.height(test.getroot()->right) << "\n";
@@ -54,10 +58,9 @@ void testone() {
 	*/
 	test.erase(2);
 	test.clear();
-
+	test.insert(sx);
+	test.insert(fst);
 }
-
-/*
 
 bool equalitytest(){
 	int test_size = 1000;
@@ -89,16 +92,16 @@ bool equalitytest(){
 	}
 	return testbool;
 }
-*/
 
-void chartest() {
-	AVLMap<int,char> test; 
-	pair<int,char> fst;
-	fst = make_pair(1,'c'); 
-	pair<int,char> snd;
-	snd = make_pair(2,'d');
-	pair<int,char> thrd;
-	thrd = make_pair(3,'e');
+
+void stringtest() {
+	AVLMap<int,string> test; 
+	pair<int,string> fst;
+	fst = make_pair(1,"words"); 
+	pair<int,string> snd;
+	snd = make_pair(2,"morewords");
+	pair<int,string> thrd;
+	thrd = make_pair(3,"things");
 	auto itrfrst = test.insert(fst);
 	auto itrfrstfail = test.insert(fst);
 	cout << test[1] << "\n";
@@ -108,20 +111,27 @@ void chartest() {
 	cout << test[3] << "\n";
 	cout << test.count(1) << "\n";
 	cout << test.count(0) << "\n";
-	cout << "This should be a 1: " << (itrfrst.first == itrfrstfail.first);
-	cout << "\nThis should be a 0: " << (itrfrst.second == itrfrstfail.second);
+
+	if(itrfrst.first != itrfrstfail.first) cout << "Insert broke on duplicate insertion \n";
+	if(itrfrst.second == itrfrstfail.second) cout << "Insert broke on duplicate insertion (the boolean is incorrect)\n";
+	auto tmpsz = test.size(); 
 	test.erase(2);
-	cout << "\n"<< test.count(2) << "\n";
+	if(tmpsz-1 != test.size()){
+		cout << "Erase size failed \n";
+	}
+	if(test.count(2) != 0){
+		cout << "Erase did not remove node \n";
+	}
 	for(auto x:test){
-		cout << "\n" << "Ranged loop";
-		cout << x.first << "\n";
+		cout << "\n" << "Ranged loop  ";
+		cout << x.first << ": " << x.second << "\n";
 	}
 
 }
-/*
 
-bool runTests(){
-	int test_size = 2000000;
+
+bool runAVLTestsForwards(){
+	int test_size = 200000;
     AVLMap<int, int> firstbst;
 	map<int,int> firstmap;
 	
@@ -153,9 +163,7 @@ bool runTests(){
 		}
 	}	
 	
-	cout << "Copyconstructor\n";
 	AVLMap<int, int> tsbtsrif(firstbst);
-	cout << "Copy constructor finished \n";
 	
 	const auto a = tsbtsrif;
 	const auto b = firstbst;
@@ -171,7 +179,6 @@ bool runTests(){
 	if(x == y.first && ((*x).second) != 1){
 		cout << "SUCCESS!\n";
 	}
-
 	firstbst.clear();
 	random_shuffle(randoms.begin(), randoms.end());
 	//cout << randoms[0] << "\n";
@@ -192,11 +199,11 @@ bool runTests(){
 	return true;	
 }
 
-*/
 
 
-bool runAVLTests(){
-	int test_size = 20;
+
+bool runAVLTestsBackwards(){
+	int test_size = 2000000;
     AVLMap<int, int> firstbst;
 	map<int,int> firstmap;
 	
@@ -229,37 +236,56 @@ bool runAVLTests(){
 	for(int i=10; i<test_size/2; ++i){
 	    firstbst.erase(i);
 	}
-	firstbst.printPreOrder(firstbst.getroot());
+	
 	return true;	
 }
 
 void simpleTest(){
 	AVLMap<int, int> st;
 	st[1];
-	cout << "\n" << st.size() << "\n";
+	st[2];
+	st[3];
+	if(st.size()!=3){
+		cout << "Problem with bracket and size\n ";
+	}
+	//st.printPreOrder(st.getroot());
 }
+
+
 int main(){
 	testone();
 	cout << "\n---------Testone passed---------\n";
-	runAVLTests();
 	cout << "\n";
 	simpleTest();
-	cout << "\n";
-/*	
 	auto t1 = std::chrono::high_resolution_clock::now();
-    runTests();
+    runAVLTestsForwards();
 	auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "test function took "
+    std::cout << "Forwards test function took "
+           	  << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()///1000
+              << " milliseconds\n";
+
+	cout << "\n---------RunTests Forwards passed---------\n";
+	if(equalitytest()) {cout << "\n---------Equality Test Passed---------\n";}
+	else cout << "\n---------Equality Test Failed---------\n";
+	stringtest();
+	cout << "\n---------StringTests ran---------\n";
+
+
+	cout << "\n---------RunTests Backwards passed---------\n";
+	t1 = std::chrono::high_resolution_clock::now();
+    runAVLTestsBackwards();
+	t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "Backwards test function took "
            	  << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()///1000
               << " milliseconds\n";
 
 	cout << "\n---------RunTests passed---------\n";
-	if(equalitytest()) {cout << "\n---------Equality Test Passed---------\n";}
-	else cout << "\n---------Equality Test Failed---------\n";
-	chartest();
-	cout << "\n---------CharTests ran---------\n";
+	
+
 	return 0; 	
 
+	cout << "\n";
+/*	
 */
 }
 
